@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منتجات من أجلك - Products for You</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .product-title {
+            color: #2980b9;
+            font-size: 1.5em;
+            margin: 0 0 10px;
+        }
+
+        .product-desc {
+            color: #666;
+            margin: 0 0 15px;
+            font-size: 1em;
+        }
+
+        .product-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #e74c3c;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: background 0.3s ease;
+        }
+
+        .product-link:hover {
+            background: #c0392b;
+        }
+
+        .add-product {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .add-product input,
+        .add-product textarea {
+            display: block;
+            width: 300px;
+            margin: 10px auto;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            box-sizing: border-box; /* مهم: يضمن أن الحجم يشمل الحواف والحشو */
+        }
+
+        .add-product button {
+            padding: 12px 30px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .add-product button:hover {
+            background: #219653;
+        }
+
+        /* عرض رسالة الخطأ */
+        .error-message {
+            color: red;
+            margin-top: 5px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>منتجات من أجلك - Products for You</h1>
+
+        <div class="add-product">
+            <h2>أضف منتجًا جديدًا</h2>
+            <input type="text" id="productName" placeholder="اسم المنتج" required>
+            <textarea id="productDesc" placeholder="وصف المنتج" required></textarea>
+            <input type="url" id="productLink" placeholder="رابط المنتج" required>
+            <input type="file" id="productImage" accept="image/*" required>
+            <button onclick="addProduct()">إضافة المنتج</button>
+            <p id="errorMessage" class="error-message"></p> <!-- لعرض رسائل الخطأ -->
+        </div>
+
+        <div class="product-grid" id="productGrid">
+            <!-- المنتجات ستُضاف هنا ديناميكيًا -->
+        </div>
+    </div>
+
+    <script>
+        // دالة لتحويل التاريخ إلى سلسلة بتنسيق YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // الأشهر تبدأ من 0
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // دالة لحفظ المنتجات في Local Storage
+        function saveProducts(products) {
+            const today = formatDate(new Date());
+            localStorage.setItem('products_' + today, JSON.stringify(products));
+        }
+
+        // دالة لاسترجاع المنتجات من Local Storage
+        function getProducts() {
+            const today = formatDate(new Date());
+            const productsJSON = localStorage.getItem('products_' + today);
+            return productsJSON ? JSON.parse(productsJSON) : [];
+        }
+
+
+        // مصفوفة لتخزين المنتجات
+        let products = getProducts();
+
+        // دالة لعرض المنتجات في شبكة المنتجات
+        function displayProducts() {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = ''; // مسح المحتوى السابق
+
+            // المرور على كل منتج في المصفوفة وإنشاء بطاقة منتج له
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="product-img">
+                    <h3 class="product-title">${product.name}</h3>
+                    <p class="product-desc">${product.desc}</p>
+                    <a href="${product.link}" class="product-link" target="_blank">شراء الآن</a>
+                `;
+                grid.appendChild(card); // إضافة البطاقة إلى الشبكة
+            });
+        }
+
+        // دالة لإضافة منتج جديد
+        function addProduct() {
+            const name = document.getElementById('productName').value;
+            const desc = document.getElementById('productDesc').value;
+            const link = document.getElementById('productLink').value;
+            const imageInput = document.getElementById('productImage');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = ''; // مسح أي رسالة خطأ سابقة
+
+            // التحقق من أن جميع الحقول قد تم ملؤها
+            if (!name || !desc || !link || !imageInput.files[0]) {
+                errorMessage.textContent = 'يرجى ملء جميع الحقول واختيار صورة.';
+                return; // الخروج من الدالة إذا كان هناك حقول مفقودة
+            }
+
+            //التحقق من أن الرابط هو رابط صالح
+            try {
+                new URL(link);
+            } catch (_) {
+                errorMessage.textContent = 'يرجى إدخال رابط URL صالح.';
+                return;
+            }
+
+            // قراءة الصورة كـ Data URL
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                // إنشاء كائن منتج جديد
+                const newProduct = {
+                    name: name,
+                    desc: desc,
+                    link: link,
+                    image: e.target.result // الصورة كـ Data URL
+                };
+
+                products.push(newProduct); // إضافة المنتج إلى المصفوفة
+                saveProducts(products); // حفظ المنتجات في Local Storage
+                displayProducts(); // عرض المنتجات المحدثة
+                clearInputs(); // مسح الحقول
+            };
+
+            reader.onerror = function() {
+                errorMessage.textContent = 'حدث خطأ أثناء قراءة الصورة.';
+            };
+
+            reader.readAsDataURL(imageInput.files[0]); // بدء قراءة الصورة
+        }
+
+        // دالة لمسح محتويات الحقول بعد إضافة المنتج
+        function clearInputs() {
+            document.getElementById('productName').value = '';
+            document.getElementById('productDesc').value = '';
+            document.getElementById('productLink').value = '';
+            document.getElementById('productImage').value = '';
+        }
+
+        // عرض المنتجات عند تحميل الصفحة (إذا كانت هناك منتجات مخزنة)
+        displayProducts();
+
+    </script>
+</body>
+</html>
